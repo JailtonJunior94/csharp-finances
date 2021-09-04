@@ -41,6 +41,7 @@ stages:
               targetdir: "$(Build.SourcesDirectory)/CodeCoverage"
               reporttypes: "HtmlInline_AzurePipelines;Cobertura;Badges"
               assemblyfilters: "-xunit*"
+
           - task: PublishCodeCoverageResults@1
             displayName: "Publish code coverage"
             inputs:
@@ -48,18 +49,18 @@ stages:
               summaryFileLocation: "$(Build.SourcesDirectory)/CodeCoverage/Cobertura.xml"
               reportDirectory: "$(Build.SourcesDirectory)/CodeCoverage"
               
-  - stage: Docker
-    displayName: Docker Build and Push
-    jobs:
-      - job: Docker
-        displayName: Docker Build and Push
-        steps:
-          - task: Docker@2
-            inputs:
-              containerRegistry: "DockerHub_LimaTeixeira"
-              repository: "jailtonjunior/hartmann-api"
-              command: "buildAndPush"
-              Dockerfile: "**/Dockerfile"
-              tags: |
-                $(Build.BuildId)
-                latest
+  # - stage: Docker
+  #   displayName: Docker Build and Push
+  #   jobs:
+  #     - job: Docker
+  #       displayName: Docker Build and Push
+  #       steps:
+  #         - task: Docker@2
+  #           inputs:
+  #             containerRegistry: "DockerHub_LimaTeixeira"
+  #             repository: "jailtonjunior/financial-api"
+  #             command: "buildAndPush"
+  #             Dockerfile: "**/Dockerfile"
+  #             tags: |
+  #               $(Build.BuildId)
+  #               latest
