@@ -1,0 +1,65 @@
+trigger:
+  - main
+  - develop
+
+pool:
+  vmImage: "ubuntu-latest"
+
+variables:
+  buildConfiguration: "Release"
+
+stages:
+  - stage: Build
+    displayName: Build
+    jobs:
+      - job: Build
+        displayName: Build
+        steps:
+          - script: dotnet restore
+            displayName: "Restoring Packages"
+          - script: dotnet build --configuration $(buildConfiguration)
+            displayName: "Building Project"
+
+  - stage: Tests
+    displayName: Tests
+    jobs:
+      - job: Tests
+        displayName: Tests
+        steps:
+          - task: DotNetCoreCLI@2
+            displayName: "dotnet test"
+            inputs:
+              command: "test"
+              projects: "**/*Tests.csproj"
+              arguments: "--configuration $(BuildConfiguration) /p:CollectCoverage=true /p:CoverletOutputFormat=cobertura"
+              publishTestResults: true
+
+          - task: reportgenerator@4
+            displayName: ReportGenerator
+            inputs:
+              reports: "$(Build.SourcesDirectory)/tests/**/coverage.cobertura.xml"
+              targetdir: "$(Build.SourcesDirectory)/CodeCoverage"
+              reporttypes: "HtmlInline_AzurePipelines;Cobertura;Badges"
+              assemblyfilters: "-xunit*"
+          - task: PublishCodeCoverageResults@1
+            displayName: "Publish code coverage"
+            inputs:
+              codeCoverageTool: Cobertura
+              summaryFileLocation: "$(Build.SourcesDirectory)/CodeCoverage/Cobertura.xml"
+              reportDirectory: "$(Build.SourcesDirectory)/CodeCoverage"
+              
+  - stage: Docker
+    displayName: Docker Build and Push
+    jobs:
+      - job: Docker
+        displayName: Docker Build and Push
+        steps:
+          - task: Docker@2
+            inputs:
+              containerRegistry: "DockerHub_LimaTeixeira"
+              repository: "jailtonjunior/hartmann-api"
+              command: "buildAndPush"
+              Dockerfile: "**/Dockerfile"
+              tags: |
+                $(Build.BuildId)
+                latest
