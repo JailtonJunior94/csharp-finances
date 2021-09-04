@@ -1,20 +1,44 @@
-# Introduction 
-TODO: Give a short introduction of your project. Let this section explain the objectives or the motivation behind this project. 
+Cliente Incidentes: Componente responsável de obter os eventos de tag, lista pap, passagens recusadas e atualização mensageria
 
-# Getting Started
-TODO: Guide users through getting your code up and running on their own system. In this section you can talk about:
-1.	Installation process
-2.	Software dependencies
-3.	Latest releases
-4.	API references
-
-# Build and Test
-TODO: Describe and show how to build your code and run the tests. 
-
-# Contribute
-TODO: Explain how other users and developers can contribute to make your code better. 
-
-If you want to learn more about creating good readme files then refer the following [guidelines](https://docs.microsoft.com/en-us/azure/devops/repos/git/create-a-readme?view=azure-devops). You can also seek inspiration from the below readme files:
-- [ASP.NET Core](https://github.com/aspnet/Home)
-- [Visual Studio Code](https://github.com/Microsoft/vscode)
-- [Chakra Core](https://github.com/Microsoft/ChakraCore)
+## Tecnologias:
+- C#
+- .Net Core 3.1
+- Azure Functions
+- SQL Server
+- Sonarqube
+  
+## Testes de Unidade
+- Na pasta raiz, executar: 
+``` 
+dotnet test /p:CollectCoverage=true /p:CoverletOutputFormat=opencover /p:Exclude="[xunit*]*"
+```
+- Instalar global o package Report Generator
+``` 
+dotnet tool install -g dotnet-reportgenerator-globaltool
+```
+- Para gerar o HTML de cobertura:  
+```
+reportgenerator "-reports:test/*/*.opencover.xml" "-targetdir:test/Cliente.Incidentes.Tests/Coverage"
+```
+## Sonarqube
+- Instalar global o package dotnet-sonarscanner
+```
+dotnet tool install --global dotnet-sonarscanner --version 4.8.0
+```
+- Na pasta raiz, executar depois de ter executado os testes unitários (TDD): 
+- Primeiro comando a executar: 
+```
+dotnet build-server shutdown
+```
+- Segundo comando a executar: 
+```
+dotnet-sonarscanner begin /k:"Cliente.Incidentes" /d:sonar.host.url="http://localhost:9000" /d:sonar.login="73b449d8bafee501ece8ede18a17a96ea045f858" /d:sonar.cs.opencover.reportsPaths=test/Cliente.Incidentes.Tests/Coverage/coverage.opencover.xml /d:sonar.coverage.exclusions="**Test*.cs, src/Cliente.Incidentes.API/**.cs"
+```
+- Terceiro comando a executar: 
+```
+dotnet build Cliente.Incidentes.sln
+```
+- Último comando a executar: 
+```
+dotnet-sonarscanner end /d:sonar.login="73b449d8bafee501ece8ede18a17a96ea045f858"
+```
