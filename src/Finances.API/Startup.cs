@@ -1,10 +1,15 @@
+using System;
+using System.Net.Mime;
+using System.Text.Json;
 using Microsoft.OpenApi.Models;
+using Microsoft.AspNetCore.Http;
 using Finances.API.Configurations;
 using Microsoft.Extensions.Hosting;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 
 namespace Finances.API
 {
@@ -25,6 +30,7 @@ namespace Finances.API
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "Finances.API", Version = "v1" });
             });
             services.AddDependencies();
+            services.AddHealthChecks();
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
@@ -35,6 +41,21 @@ namespace Finances.API
                 app.UseSwagger();
                 app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "Finances.API v1"));
             }
+
+            app.UseHealthChecks("/health", new HealthCheckOptions
+            {
+                ResponseWriter = async (context, report) =>
+                {
+                    var result = JsonSerializer.Serialize(new
+                    {
+                        currentTime = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"),
+                        statusApplication = report.Status.ToString(),
+                    });
+
+                    context.Response.ContentType = MediaTypeNames.Application.Json;
+                    await context.Response.WriteAsync(result);
+                }
+            });
 
             app.UseRouting();
 
