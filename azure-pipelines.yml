@@ -67,6 +67,7 @@ stages:
               projectName: $(projectName)
               extraproperties: | 
                 sonar.cs.opencover.reportsPaths=$(Build.SourcesDirectory)/**/coverage.cobertura.xml
+                sonar.cs.vstest.reportsPaths=$(Build.SourcesDirectory)/**/coverage.cobertura.xml
           
           - script: dotnet build --configuration $(buildConfiguration)
             displayName: "Building Project"
