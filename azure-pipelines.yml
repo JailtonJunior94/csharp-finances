@@ -17,6 +17,7 @@ stages:
         steps:
           - script: dotnet restore
             displayName: "Restoring Packages"
+
           - script: dotnet build --configuration $(buildConfiguration)
             displayName: "Building Project"
 
@@ -39,7 +40,6 @@ stages:
             inputs:
               reports: "$(Build.SourcesDirectory)/test/**/coverage.cobertura.xml"
               targetdir: "$(Build.SourcesDirectory)/CodeCoverage"
-              # reporttypes: "HtmlInline_AzurePipelines;Cobertura;Badges"
               assemblyfilters: "-xunit*"
 
           - task: PublishCodeCoverageResults@1
@@ -48,6 +48,29 @@ stages:
               codeCoverageTool: Cobertura
               summaryFileLocation: "$(Build.SourcesDirectory)/CodeCoverage/Cobertura.xml"
               reportDirectory: "$(Build.SourcesDirectory)/CodeCoverage"
+
+  - stage: SonarCloud
+    displayName: Sonar Cloud
+    jobs:
+      - job: Sonar
+        displayName: Sonar Cloud Prepare
+        steps:
+          - task: SonarCloudPrepare@1
+            inputs:
+              SonarCloud: 'Sonar_Cloud'
+              organization: 'jailtonjunior94'
+              scannerMode: 'MSBuild'
+              projectKey: 'JailtonJunior94_csharp-finances'
+              projectName: 'csharp-finances'
+          
+          - script: dotnet build --configuration $(buildConfiguration)
+            displayName: "Building Project"
+
+          - task: SonarCloudAnalyze@1
+
+          - task: SonarCloudPublish@1
+            inputs:
+              pollingTimeoutSec: '300'
               
   # - stage: Docker
   #   displayName: Docker Build and Push
@@ -57,8 +80,8 @@ stages:
   #       steps:
   #         - task: Docker@2
   #           inputs:
-  #             containerRegistry: "DockerHub_LimaTeixeira"
-  #             repository: "jailtonjunior/financial-api"
+  #             containerRegistry: "Microsoft_Azure"
+  #             repository: "jailtonjunior/finance-api"
   #             command: "buildAndPush"
   #             Dockerfile: "**/Dockerfile"
   #             tags: |

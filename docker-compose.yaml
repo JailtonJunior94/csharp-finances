@@ -1,0 +1,17 @@
+version: '3'
+
+services:
+    finance:
+        image: finance-api
+        build:
+            context: .
+        ports:
+            - "5000:80"
+        environment:
+            - ASPNETCORE_ENVIRONMENT=Development
+        networks: 
+            - finance_network
+            
+networks: 
+    finance_network:
+        driver: bridge
