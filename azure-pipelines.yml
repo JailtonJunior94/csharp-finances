@@ -63,7 +63,7 @@ stages:
             inputs:
               command: "test"
               projects: "**/*Tests.csproj"
-              arguments: "--configuration $(BuildConfiguration) /p:CollectCoverage=true /p:CoverletOutputFormat=cobertura"
+              arguments: "--configuration $(BuildConfiguration) /p:CollectCoverage=true /p:CoverletOutputFormat=opencover --logger trx"
               publishTestResults: true
 
           - task: SonarCloudPrepare@1
@@ -74,8 +74,9 @@ stages:
               projectKey: $(projectKey)
               projectName: $(projectName)
               extraproperties: | 
-                sonar.cs.opencover.reportsPaths=$(Build.SourcesDirectory)/test/**/coverage.cobertura.xml
-                sonar.cs.vstest.reportsPaths=$(Build.SourcesDirectory)/test/**/coverage.cobertura.xml
+                sonar.exclusions=**/obj/**,**/*.dll
+                sonar.cs.opencover.reportsPaths=$(Build.SourcesDirectory)/**/coverage.opencover.xml
+                sonar.cs.vstest.reportsPaths=$(Agent.TempDirectory)/*.trx
           
           - script: dotnet build --configuration $(buildConfiguration)
             displayName: "Building Project"
