@@ -7,6 +7,9 @@ pool:
 
 variables:
   buildConfiguration: "Release"
+  organization: 'jailtonjunior94'
+  projectKey: 'JailtonJunior94_csharp-finances'
+  projectName: 'csharp-finances'
 
 stages:
   - stage: Build
@@ -53,15 +56,17 @@ stages:
     displayName: Sonar Cloud
     jobs:
       - job: Sonar
-        displayName: Sonar Cloud Prepare
+        displayName: Sonar Cloud
         steps:
           - task: SonarCloudPrepare@1
             inputs:
               SonarCloud: 'Sonar_Cloud'
-              organization: 'jailtonjunior94'
+              organization: $(organization)
               scannerMode: 'MSBuild'
-              projectKey: 'JailtonJunior94_csharp-finances'
-              projectName: 'csharp-finances'
+              projectKey: $(projectKey)
+              projectName: $(projectName)
+              extraproperties: | 
+                sonar.flex.cobertura.reportPaths=$(Build.SourcesDirectory)/test/**/coverage.cobertura.xml
           
           - script: dotnet build --configuration $(buildConfiguration)
             displayName: "Building Project"
