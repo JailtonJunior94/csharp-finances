@@ -23,6 +23,10 @@ stages:
 
           - script: dotnet build --configuration $(buildConfiguration)
             displayName: "Building Project"
+          - task: PublishPipelineArtifact@1
+            inputs:
+              artifactName: 'manifests'
+              path: '.k8s'
 
   - stage: Tests
     displayName: Tests
@@ -86,6 +90,7 @@ stages:
           - task: SonarCloudPublish@1
             inputs:
               pollingTimeoutSec: '300'
+              
               
   # - stage: Docker
   #   displayName: Docker Build and Push
