@@ -58,6 +58,14 @@ stages:
       - job: Sonar
         displayName: Sonar Cloud
         steps:
+          - task: DotNetCoreCLI@2
+            displayName: "dotnet test"
+            inputs:
+              command: "test"
+              projects: "**/*Tests.csproj"
+              arguments: "--configuration $(BuildConfiguration) /p:CollectCoverage=true /p:CoverletOutputFormat=cobertura"
+              publishTestResults: true
+
           - task: SonarCloudPrepare@1
             inputs:
               SonarCloud: 'Sonar_Cloud'
@@ -66,8 +74,8 @@ stages:
               projectKey: $(projectKey)
               projectName: $(projectName)
               extraproperties: | 
-                sonar.cs.opencover.reportsPaths=$(Build.SourcesDirectory)/CodeCoverage/Cobertura.xml
-                sonar.cs.vstest.reportsPaths=$(Build.SourcesDirectory)/CodeCoverage/Cobertura.xml
+                sonar.cs.opencover.reportsPaths=$(Build.SourcesDirectory)/test/**/coverage.cobertura.xml
+                sonar.cs.vstest.reportsPaths=$(Build.SourcesDirectory)/test/**/coverage.cobertura.xml
           
           - script: dotnet build --configuration $(buildConfiguration)
             displayName: "Building Project"

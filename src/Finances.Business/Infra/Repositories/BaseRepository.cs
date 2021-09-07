@@ -4,7 +4,7 @@ namespace Finances.Business.Infra.Repositories
 {
     public class BaseRepository
     {
-        protected SqlConnection GetSqlConnection(string connectionString)
+        protected static SqlConnection GetSqlConnection(string connectionString)
         {
             return new SqlConnection(connectionString);
         }

@@ -8,10 +8,24 @@ services:
         ports:
             - "5000:80"
         environment:
-            - ASPNETCORE_ENVIRONMENT=Development
+            - ASPNETCORE_ENVIRONMENT=Staging
         networks: 
             - finance_network
             
+    mssql:
+        container_name: finance-db
+        image: mcr.microsoft.com/mssql/server:2019-latest
+        restart: always
+        volumes:
+            - ./.docker/data:/var/opt/mssql/data
+        environment:
+            - ACCEPT_EULA=Y
+            - SA_PASSWORD=@docker@2021
+        ports:
+            - "1433:1433"
+        networks: 
+            - finance_network
+
 networks: 
     finance_network:
         driver: bridge
