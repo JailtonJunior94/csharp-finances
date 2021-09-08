@@ -36,6 +36,8 @@ az aks get-credentials --resource-group $RESOURCE_GROUP --name $NAME
 1. Criando Secret ACR
 ```
 kubectl create secret docker-registry regcred --docker-server=<your-registry-server> --docker-username=<your-name> --docker-password=<your-pword>
+
+kubectl create secret docker-registry regcred --docker-server=financesregistry.azurecr.io --docker-username=financesregistry --docker-password=IyBpIodySwX8SkKncTGw+60MhjzxXgJS
 ```
 
 2. Aplicando manifestos
