@@ -78,7 +78,7 @@ stages:
               pollingTimeoutSec: '300'
               
               
-  - stage: Docker (ACR)
+  - stage: Docker
     displayName: Docker Build and Push (ACR)
     jobs:
       - job: Docker 
