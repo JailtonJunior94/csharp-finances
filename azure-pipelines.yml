@@ -92,9 +92,10 @@ stages:
 
           - task: Docker@2
             inputs:
+              buildContext: .
               containerRegistry: ACR_CONNECTION
-              repository: "financesregistry.azurecr.io/finance-api"
-              command: "buildAndPush"
+              repository: finance-api
+              command: buildAndPush
               Dockerfile: "**/Dockerfile"
               tags: |
                 $(Build.BuildId)
