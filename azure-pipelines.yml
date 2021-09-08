@@ -78,18 +78,18 @@ stages:
               pollingTimeoutSec: '300'
               
               
-  # - stage: Docker
-  #   displayName: Docker Build and Push
-  #   jobs:
-  #     - job: Docker
-  #       displayName: Docker Build and Push
-  #       steps:
-  #         - task: Docker@2
-  #           inputs:
-  #             containerRegistry: "Microsoft_Azure"
-  #             repository: "jailtonjunior/finance-api"
-  #             command: "buildAndPush"
-  #             Dockerfile: "**/Dockerfile"
-  #             tags: |
-  #               $(Build.BuildId)
-  #               latest
+  - stage: Docker (ACR)
+    displayName: Docker Build and Push (ACR)
+    jobs:
+      - job: Docker 
+        displayName: Docker Build and Push (ACR)
+        steps:
+          - task: Docker@2
+            inputs:
+              containerRegistry: "Microsoft_Azure"
+              repository: "financesregistry.azurecr.io/finance-api"
+              command: "buildAndPush"
+              Dockerfile: "**/Dockerfile"
+              tags: |
+                $(Build.BuildId)
+                latest

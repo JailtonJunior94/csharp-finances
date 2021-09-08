@@ -22,10 +22,26 @@ GO
 GO   
 ```
 
+## Microsoft Azure
+1. Autenticação no azure (Precisamos instalar o ([Azure CLI](https://docs.microsoft.com/pt-br/cli/azure/install-azure-cli))
+```
+az login
+```
+2. Obtendo credenciais do cluster AKS 
+```
+az aks get-credentials --resource-group $RESOURCE_GROUP --name $NAME
+```
+
 ## Utilizando Kubernetes
-1. Aplicando manifestos
+1. Criando Secret ACR
+```
+kubectl create secret docker-registry regcred --docker-server=<your-registry-server> --docker-username=<your-name> --docker-password=<your-pword>
+```
+
+2. Aplicando manifestos
 ```
 kubectl apply -f .\.k8s\namespaces\ -R
 kubectl apply -f .\.k8s\deployments\ -R -n finance
 kubectl apply -f .\.k8s\services\ -R -n finance
 ```
+
