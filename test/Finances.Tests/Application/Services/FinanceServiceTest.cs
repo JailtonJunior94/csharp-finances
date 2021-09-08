@@ -4,7 +4,6 @@ using Moq.AutoMock;
 using Finances.Tests.Mocks;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-using Finances.Business.Domain.Dtos;
 using Finances.Business.Domain.Entities;
 using Finances.Business.Domain.Interfaces;
 using Finances.Business.Application.Services;
@@ -31,7 +30,7 @@ namespace Finances.Tests.Application.Services
                 .ReturnsAsync(FinanceMock.FinanceEntity());
 
             //Act
-            var result = await _service.CreateFinanceAsync(It.IsAny<FinanceRequest>());
+            var result = await _service.CreateFinanceAsync(FinanceMock.FinanceRequest());
 
             //Assert
             Assert.Equal(StatusCodes.Status201Created, result.StatusCode);
