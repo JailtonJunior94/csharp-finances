@@ -88,11 +88,11 @@ stages:
             displayName: Login to ACR
             inputs:
              command: login
-             containerRegistry: Microsoft_Azure_RM
+             containerRegistry: ACR_CONNECTION
 
           - task: Docker@2
             inputs:
-              containerRegistry: Microsoft_Azure_RM
+              containerRegistry: ACR_CONNECTION
               repository: "financesregistry.azurecr.io/finance-api"
               command: "buildAndPush"
               Dockerfile: "**/Dockerfile"
