@@ -1,0 +1,16 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ingress-apis
+spec:
+  rules:
+    - host: partners.jailtonjunior.com.br
+      http:
+        paths:
+          - pathType: Prefix
+            path: /
+            backend:
+              service:
+                name: financial-api-service
+                port:
+                  number: 80

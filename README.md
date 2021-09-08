@@ -36,8 +36,6 @@ az aks get-credentials --resource-group $RESOURCE_GROUP --name $NAME
 1. Criando Secret ACR
 ```
 kubectl create secret docker-registry regcred --docker-server=<your-registry-server> --docker-username=<your-name> --docker-password=<your-pword>
-
-kubectl create secret docker-registry regcred --docker-server=financesregistry.azurecr.io --docker-username=financesregistry --docker-password=IyBpIodySwX8SkKncTGw+60MhjzxXgJS
 ```
 
 2. Aplicando manifestos
@@ -47,3 +45,13 @@ kubectl apply -f .\.k8s\deployments\ -R -n finance
 kubectl apply -f .\.k8s\services\ -R -n finance
 ```
 
+3. Habilitando ingress-controller
+```
+kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.0.0/deploy/static/provider/cloud/deploy.yaml
+```
+
+## Configurando Azure DevOps (Release)
+1. Obtendo credenciais cluster kubernetes 
+```
+kubectl config view --raw
+```
