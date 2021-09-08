@@ -5,6 +5,7 @@ namespace Finances.Business.Domain.Entities
 {
     public class Finance
     {
+        public Finance() { }
         public Finance(string title, double value, string type)
         {
             ID = Guid.NewGuid();

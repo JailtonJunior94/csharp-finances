@@ -1,5 +1,6 @@
 ﻿using System;
 using Dapper;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using Microsoft.Extensions.Logging;
@@ -22,14 +23,20 @@ namespace Finances.Business.Infra.Repositories
             _configuration = configuration;
         }
 
-        public Task<ICollection<Finance>> GetAsync(Finance entity)
+        public async Task<ICollection<Finance>> GetAsync()
         {
-            throw new NotImplementedException();
-        }
+            try
+            {
+                using var connection = GetSqlConnection(_configuration["ConnectionString"]);
 
-        public Task<Finance> GetByIdAsync(Guid ID)
-        {
-            throw new NotImplementedException();
+                var finances = await connection.QueryAsync<Finance>(sql: FinaceQuery.GetFinance);
+                return finances.ToList();
+            }
+            catch (Exception exception)
+            {
+                _logger.LogError($"[{nameof(FinanceRepository)}] [GetAsync] [{exception?.Message ?? exception?.InnerException.Message}]");
+                return new List<Finance>();
+            }
         }
 
         public async Task<Finance> InsertAsync(Finance entity)
@@ -38,7 +45,7 @@ namespace Finances.Business.Infra.Repositories
             {
                 using var connection = GetSqlConnection(_configuration["ConnectionString"]);
 
-                var result = await connection.ExecuteAsync(FinaceQuery.InsertFinance, new
+                await connection.ExecuteAsync(FinaceQuery.InsertFinance, new
                 {
                     id = entity.ID,
                     title = entity.Title,

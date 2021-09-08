@@ -1,5 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Http;
 using Finances.Business.Domain.Dtos;
@@ -24,14 +23,6 @@ namespace Finances.API.Controllers
         public async Task<IActionResult> CreateAsync([FromBody] FinanceRequest request)
         {
             return await _service.CreateFinanceAsync(request);
-        }
-
-        [HttpGet("{id}")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> GetByIdAsync(Guid ID)
-        {
-            return await _service.GetFinanceByIdAsync(ID);
         }
 
         [HttpGet]

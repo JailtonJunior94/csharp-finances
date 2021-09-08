@@ -28,39 +28,11 @@ stages:
               artifactName: 'manifests'
               path: '.k8s'
 
-  - stage: Tests
-    displayName: Tests
+  - stage: TestsAndSonarCloud
+    displayName: Tests And Sonar Cloud
     jobs:
-      - job: Tests
-        displayName: Tests
-        steps:
-          - task: DotNetCoreCLI@2
-            displayName: "dotnet test"
-            inputs:
-              command: "test"
-              projects: "**/*Tests.csproj"
-              arguments: "--configuration $(BuildConfiguration) /p:CollectCoverage=true /p:CoverletOutputFormat=cobertura"
-              publishTestResults: true
-
-          - task: reportgenerator@4
-            displayName: ReportGenerator
-            inputs:
-              reports: "$(Build.SourcesDirectory)/test/**/coverage.cobertura.xml"
-              targetdir: "$(Build.SourcesDirectory)/CodeCoverage"
-              assemblyfilters: "-xunit*"
-
-          - task: PublishCodeCoverageResults@1
-            displayName: "Publish code coverage"
-            inputs:
-              codeCoverageTool: Cobertura
-              summaryFileLocation: "$(Build.SourcesDirectory)/CodeCoverage/Cobertura.xml"
-              reportDirectory: "$(Build.SourcesDirectory)/CodeCoverage"
-
-  - stage: SonarCloud
-    displayName: Sonar Cloud
-    jobs:
-      - job: Sonar
-        displayName: Sonar Cloud
+      - job: TestsAndSonarCloud
+        displayName: Tests And Sonar Cloud
         steps:
           - task: DotNetCoreCLI@2
             displayName: "dotnet test"
@@ -69,6 +41,20 @@ stages:
               projects: "**/*Tests.csproj"
               arguments: "--configuration $(BuildConfiguration) /p:CollectCoverage=true /p:CoverletOutputFormat=opencover --logger trx"
               publishTestResults: true
+
+          - task: reportgenerator@4
+            displayName: ReportGenerator
+            inputs:
+              reports: "$(Build.SourcesDirectory)/test/**/coverage.opencover.xml"
+              targetdir: "$(Build.SourcesDirectory)/CodeCoverage"
+              assemblyfilters: "-xunit*"
+  
+          - task: PublishCodeCoverageResults@1
+            displayName: "Publish code coverage"
+            inputs:
+              codeCoverageTool: Cobertura
+              summaryFileLocation: "$(Build.SourcesDirectory)/CodeCoverage/Cobertura.xml"
+              reportDirectory: "$(Build.SourcesDirectory)/CodeCoverage"
 
           - task: SonarCloudPrepare@1
             inputs:

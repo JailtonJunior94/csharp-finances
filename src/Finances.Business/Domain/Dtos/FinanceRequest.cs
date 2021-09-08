@@ -1,12 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Finances.Business.Domain.Enums;
 
 namespace Finances.Business.Domain.Dtos
 {
     public class FinanceRequest
     {
+        public string Title { get; set; }
+        public double Value { get; set; }
+        public FinaceType Type { get; set; }
     }
 }

@@ -1,12 +1,14 @@
 ﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Finances.Business.Domain.Dtos;
-using Finances.Business.Domain.Interfaces;
-using Finances.Business.Application.Interfaces;
-using Microsoft.AspNetCore.Http;
 using Finances.Business.Domain.Entities;
+using Finances.Business.Domain.Interfaces;
+using Finances.Business.Shared.Extensions;
+using Finances.Business.Application.Interfaces;
 
 namespace Finances.Business.Application.Services
 {
@@ -26,26 +28,34 @@ namespace Finances.Business.Application.Services
         {
             try
             {
-                var finance = await _repository.InsertAsync(new Finance("Internet", 150.15, "Entrada"));
-                if (finance is null) return new ObjectResult("Não foi possível inserir registro") { StatusCode = StatusCodes.Status400BadRequest };
+                var finance = await _repository.InsertAsync(new Finance(request.Title, request.Value, request.Type.GetDescription()));
+                if (finance is null) return new ObjectResult(new MessageResponse("Não foi possível inserir registro")) { StatusCode = StatusCodes.Status400BadRequest };
 
-                return new ObjectResult(finance) { StatusCode = StatusCodes.Status201Created };
+                var response = new FinanceResponse(finance.ID, finance.Title, finance.Value, finance.Type, finance.CreatedAt);
+                return new ObjectResult(response) { StatusCode = StatusCodes.Status201Created };
             }
             catch (Exception exception)
             {
-                _logger.LogError($"[{nameof(FinanceService)}] [ObterEventosTagPorDocumentoAsync] [{exception?.Message ?? exception?.InnerException.Message}]");
-                return new ObjectResult("Ocorreu um erro inesperado") { StatusCode = StatusCodes.Status500InternalServerError };
+                _logger.LogError($"[{nameof(FinanceService)}] [CreateFinanceAsync] [{exception?.Message ?? exception?.InnerException.Message}]");
+                return new ObjectResult(new MessageResponse("Ocorreu um erro inesperado")) { StatusCode = StatusCodes.Status500InternalServerError };
             }
         }
 
-        public Task<ObjectResult> GetFinanceAsync()
+        public async Task<ObjectResult> GetFinanceAsync()
         {
-            throw new NotImplementedException();
-        }
+            try
+            {
+                var finances = await _repository.GetAsync();
+                if (!finances.Any()) return new ObjectResult(new MessageResponse("Não foi encontrado nenhum registro")) { StatusCode = StatusCodes.Status404NotFound };
 
-        public Task<ObjectResult> GetFinanceByIdAsync(Guid ID)
-        {
-            throw new NotImplementedException();
+                var response = finances.Select(j => new FinanceResponse(j.ID, j.Title, j.Value, j.Type, j.CreatedAt));
+                return new ObjectResult(response) { StatusCode = StatusCodes.Status200OK };
+            }
+            catch (Exception exception)
+            {
+                _logger.LogError($"[{nameof(FinanceService)}] [GetFinanceAsync] [{exception?.Message ?? exception?.InnerException.Message}]");
+                return new ObjectResult(new MessageResponse("Ocorreu um erro inesperado")) { StatusCode = StatusCodes.Status500InternalServerError };
+            }
         }
     }
 }
