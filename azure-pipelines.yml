@@ -23,6 +23,7 @@ stages:
 
           - script: dotnet build --configuration $(buildConfiguration)
             displayName: "Building Project"
+            
           - task: PublishPipelineArtifact@1
             inputs:
               artifactName: 'manifests'
