@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: finance-api
+  name: finance-api-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: finance-api
+  template:
+    metadata:
+      labels:
+        app: finance-api
+    spec:
+      containers:
+        - name: finance-api
+          image: $(AWS_ACCOUNT_ID)$.dkr.ecr.$(AWS_REGION)$.amazonaws.com/finance-api:$(Build.BuildId)$
+          livenessProbe:
+            httpGet:
+              port: 80
+              path: /health
+          resources:
+            limits:
+              cpu: "200m"
+              memory: "128Mi"
+            requests:
+              cpu: "100m"
+          env:
+            - name: ASPNETCORE_ENVIRONMENT
+              value: Production
+          ports:
+            - containerPort: 80
+      imagePullSecrets: 
+        - name: regcred

@@ -35,19 +35,19 @@ az aks get-credentials --resource-group $RESOURCE_GROUP --name $NAME
 ## Utilizando Kubernetes
 1. Criando Secret ACR
 ```
-kubectl create secret docker-registry regcred --docker-server=<your-registry-server> --docker-username=<your-name> --docker-password=<your-pword>
+kubectl create secret docker-registry regcred --docker-server=<your-registry-server> --docker-username=<your-name> --docker-password=<your-pword> \
+--namespace=finance
+```
+2. Criando Secret ECR
+```
+kubectl create secret docker-registry regcred --docker-server=<your-accountid>.dkr.ecr.<region>.amazonaws.com --docker-username=AWS --docker-password=$(aws ecr get-login-password) --namespace=finance
 ```
 
-2. Aplicando manifestos
+3. Aplicando manifestos
 ```
 kubectl apply -f .\.k8s\namespaces\ -R
 kubectl apply -f .\.k8s\deployments\ -R -n finance
 kubectl apply -f .\.k8s\services\ -R -n finance
-```
-
-3. Habilitando ingress-controller
-```
-kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.0.0/deploy/static/provider/cloud/deploy.yaml
 ```
 
 ## Configurando Azure DevOps (Release)
