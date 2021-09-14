@@ -33,7 +33,7 @@ az aks get-credentials --resource-group $RESOURCE_GROUP --name $NAME
 ```
 
 ## AWS 
-1. Obtendo na aws (Precisamos instalar o ([AWS CLI](https://aws.amazon.com/pt/cli/)))
+1. Obtendo na aws (Precisamos instalar o ([AWS CLI](https://aws.amazon.com/pt/cli/))
 ```
 aws sts get-caller-identity
 ```
