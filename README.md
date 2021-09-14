@@ -60,6 +60,12 @@ kubectl apply -f .\.k8s\deployments\ -R -n finance
 kubectl apply -f .\.k8s\services\ -R -n finance
 ```
 
+4. Alterar entre contextos (clusters)
+```
+kubectl config get-contexts
+kubectl config use-context <context>
+```
+
 ## Configurando Azure DevOps (Release)
 1. Obtendo credenciais cluster kubernetes 
 ```
