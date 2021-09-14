@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
         - name: finance-api
-          image: $(AWS_ACCOUNT_ID).dkr.ecr.$(AWS_REGION).amazonaws.com/finance-api:$(Build.BuildId)$
+          image: $(AWS_ACCOUNT_ID).dkr.ecr.$(AWS_REGION).amazonaws.com/finance-api:$(Build.BuildId)
           livenessProbe:
             httpGet:
               port: 80
