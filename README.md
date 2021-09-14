@@ -32,6 +32,16 @@ az login
 az aks get-credentials --resource-group $RESOURCE_GROUP --name $NAME
 ```
 
+## AWS 
+1. Obtendo na aws (Precisamos instalar o ([AWS CLI](https://aws.amazon.com/pt/cli/)))
+```
+aws sts get-caller-identity
+```
+2. Obtendo credenciais do cluster EKS
+```
+aws eks --region <REGION> update-kubeconfig --name <NOME_CLUSTER>
+```
+
 ## Utilizando Kubernetes
 1. Criando Secret ACR
 ```

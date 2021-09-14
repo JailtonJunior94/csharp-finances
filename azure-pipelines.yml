@@ -80,48 +80,48 @@ stages:
               pollingTimeoutSec: '300'
               
               
-  # - stage: Docker
-  #   displayName: Docker Build and Push (ACR)
-  #   jobs:
-  #     - job: Docker 
-  #       displayName: Docker Build and Push (ACR)
-  #       steps:
-  #         - task: Docker@2
-  #           displayName: Login to ACR
-  #           inputs:
-  #            command: login
-  #            containerRegistry: ACR_CONNECTION
+  - stage: DockerACR
+    displayName: Docker Build and Push (ACR)
+    jobs:
+      - job: Docker 
+        displayName: Docker Build and Push (ACR)
+        steps:
+          - task: Docker@2
+            displayName: Login to ACR
+            inputs:
+             command: login
+             containerRegistry: ACR_CONNECTION
 
-  #         - task: Docker@2
-  #           inputs:
-  #             buildContext: .
-  #             containerRegistry: ACR_CONNECTION
-  #             repository: $(imageName)
-  #             command: buildAndPush
-  #             Dockerfile: "**/Dockerfile"
-  #             tags: |
-  #               $(Build.BuildId)
-  #               latest
+          - task: Docker@2
+            inputs:
+              buildContext: .
+              containerRegistry: ACR_CONNECTION
+              repository: $(imageName)
+              command: buildAndPush
+              Dockerfile: "**/Dockerfile"
+              tags: |
+                $(Build.BuildId)
+                latest
 
-  # - stage: Docker
-  #   displayName: Docker Build and Push (ECR)
-  #   jobs:
-  #     - job: Docker
-  #       steps:
-  #         - script: |
-  #             aws ecr get-login-password --region $(AWS_REGION) | docker login --username AWS --password-stdin $(AWS_ACCOUNT_ID).dkr.ecr.$(AWS_REGION).amazonaws.com
-  #           displayName: 'Login to AWS'
-  #           env:
-  #             AWS_ACCESS_KEY_ID: $(AWS_ACCESS_KEY_ID)
-  #             AWS_SECRET_ACCESS_KEY: $(AWS_SECRET_ACCESS_KEY)
+  - stage: DockerECR
+    displayName: Docker Build and Push (ECR)
+    jobs:
+      - job: Docker
+        steps:
+          - script: |
+              aws ecr get-login-password --region $(AWS_REGION) | docker login --username AWS --password-stdin $(AWS_ACCOUNT_ID).dkr.ecr.$(AWS_REGION).amazonaws.com
+            displayName: 'Login to AWS'
+            env:
+              AWS_ACCESS_KEY_ID: $(AWS_ACCESS_KEY_ID)
+              AWS_SECRET_ACCESS_KEY: $(AWS_SECRET_ACCESS_KEY)
     
-  #         - task: Docker@2
-  #           displayName: Build docker image
-  #           inputs:
-  #             buildContext: .
-  #             repository: $(AWS_ACCOUNT_ID).dkr.ecr.us-east-1.amazonaws.com/$(imageName)
-  #             command: buildAndPush
-  #             Dockerfile: "**/Dockerfile"
-  #             tags: |
-  #               $(Build.BuildId)
-  #               latest
+          - task: Docker@2
+            displayName: Build docker image
+            inputs:
+              buildContext: .
+              repository: $(AWS_ACCOUNT_ID).dkr.ecr.us-east-1.amazonaws.com/$(imageName)
+              command: buildAndPush
+              Dockerfile: "**/Dockerfile"
+              tags: |
+                $(Build.BuildId)
+                latest
