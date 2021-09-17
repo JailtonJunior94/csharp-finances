@@ -71,3 +71,14 @@ kubectl config use-context <context>
 ```
 kubectl config view --raw
 ```
+
+## Habilitando Ingress Controller e Certi-Manager
+1. Instalando nginx ([Nginx](https://kubernetes.github.io/ingress-nginx/deploy/))
+```
+kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.0.0/deploy/static/provider/cloud/deploy.yaml
+```
+
+2. Instalando cert-manager ([Cert-Manager](https://cert-manager.io/docs/installation/))
+```
+kubectl apply -f https://github.com/jetstack/cert-manager/releases/download/v1.5.3/cert-manager.yaml
+```
