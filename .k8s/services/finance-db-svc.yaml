@@ -7,4 +7,4 @@ spec:
     app: finance-db
   ports:
     - port: 1433
-  type: LoadBalancer
+  type: ClusterIP
