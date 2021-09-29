@@ -24,18 +24,7 @@ stages:
 
           - script: dotnet build --configuration $(buildConfiguration)
             displayName: "Building Project"
-            
-          - task: PublishPipelineArtifact@1
-            inputs:
-              artifactName: 'manifests'
-              path: '.k8s'
 
-  - stage: TestsAndSonarCloud
-    displayName: Tests And Sonar Cloud
-    jobs:
-      - job: TestsAndSonarCloud
-        displayName: Tests And Sonar Cloud
-        steps:
           - task: DotNetCoreCLI@2
             displayName: "dotnet test"
             inputs:
@@ -50,7 +39,7 @@ stages:
               reports: "$(Build.SourcesDirectory)/test/**/coverage.opencover.xml"
               targetdir: "$(Build.SourcesDirectory)/CodeCoverage"
               assemblyfilters: "-xunit*"
-  
+
           - task: PublishCodeCoverageResults@1
             displayName: "Publish code coverage"
             inputs:
@@ -59,6 +48,7 @@ stages:
               reportDirectory: "$(Build.SourcesDirectory)/CodeCoverage"
 
           - task: SonarCloudPrepare@1
+            displayName: Sonar Prepare
             inputs:
               SonarCloud: 'Sonar_Cloud'
               organization: $(organization)
@@ -69,29 +59,24 @@ stages:
                 sonar.exclusions=**/obj/**,**/*.dll
                 sonar.cs.opencover.reportsPaths=$(Build.SourcesDirectory)/**/coverage.opencover.xml
                 sonar.cs.vstest.reportsPaths=$(Agent.TempDirectory)/*.trx
-          
+            
           - script: dotnet build --configuration $(buildConfiguration)
             displayName: "Building Project"
-
+  
           - task: SonarCloudAnalyze@1
-
+            displayName: Sonar Analyse
+  
           - task: SonarCloudPublish@1
+            displayName: Sonar Publish
             inputs:
               pollingTimeoutSec: '300'
-              
-              
-  - stage: DockerACR
-    displayName: Docker Build and Push (ACR)
-    jobs:
-      - job: Docker 
-        displayName: Docker Build and Push (ACR)
-        steps:
+
           - task: Docker@2
             displayName: Login to ACR
             inputs:
-             command: login
-             containerRegistry: ACR_CONNECTION
-
+              command: login
+              containerRegistry: ACR_CONNECTION
+  
           - task: Docker@2
             inputs:
               buildContext: .
@@ -100,9 +85,15 @@ stages:
               command: buildAndPush
               Dockerfile: "**/Dockerfile"
               tags: |
-                $(Build.BuildId)
-                latest
+                  $(Build.BuildId)
+                  latest
 
+          - task: PublishPipelineArtifact@1
+            displayName: Publish Manifest k8s
+            inputs:
+              artifactName: 'manifests'
+              path: '.k8s'
+              
   # - stage: DockerECR
   #   displayName: Docker Build and Push (ECR)
   #   jobs:
