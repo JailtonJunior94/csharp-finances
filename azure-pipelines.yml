@@ -3,14 +3,14 @@ trigger:
   - develop
 
 pool:
-  vmImage: "ubuntu-latest"
+  vmImage: ubuntu-20.04
 
 variables:
-  buildConfiguration: "Release"
-  organization: 'jailtonjunior94'
-  projectKey: 'JailtonJunior94_csharp-finances'
-  projectName: 'csharp-finances'
-  imageName: 'finance-api'
+  buildConfiguration: Release
+  organization: jailtonjunior94
+  projectKey: JailtonJunior94_csharp-finances
+  projectName: csharp-finances
+  imageName: finance-api
 
 stages:
   - stage: Build
@@ -20,37 +20,37 @@ stages:
         displayName: Build
         steps:
           - script: dotnet restore
-            displayName: "Restoring Packages"
+            displayName: Restoring Packages
 
           - script: dotnet build --configuration $(buildConfiguration)
-            displayName: "Building Project"
+            displayName: Building Project
 
           - task: DotNetCoreCLI@2
-            displayName: "dotnet test"
+            displayName: Running unit tests
             inputs:
-              command: "test"
+              command: test
               projects: "**/*Tests.csproj"
-              arguments: "--configuration $(BuildConfiguration) /p:CollectCoverage=true /p:CoverletOutputFormat=opencover --logger trx"
+              arguments: --configuration $(BuildConfiguration) /p:CollectCoverage=true /p:CoverletOutputFormat=opencover --logger trx
               publishTestResults: true
 
           - task: reportgenerator@4
             displayName: ReportGenerator
             inputs:
-              reports: "$(Build.SourcesDirectory)/test/**/coverage.opencover.xml"
-              targetdir: "$(Build.SourcesDirectory)/CodeCoverage"
-              assemblyfilters: "-xunit*"
+              reports: $(Build.SourcesDirectory)/test/**/coverage.opencover.xml
+              targetdir: $(Build.SourcesDirectory)/CodeCoverage
+              assemblyfilters: -xunit*
 
           - task: PublishCodeCoverageResults@1
-            displayName: "Publish code coverage"
+            displayName: Publish code coverage
             inputs:
               codeCoverageTool: Cobertura
-              summaryFileLocation: "$(Build.SourcesDirectory)/CodeCoverage/Cobertura.xml"
-              reportDirectory: "$(Build.SourcesDirectory)/CodeCoverage"
+              summaryFileLocation: $(Build.SourcesDirectory)/CodeCoverage/Cobertura.xml
+              reportDirectory: $(Build.SourcesDirectory)/CodeCoverage
 
           - task: SonarCloudPrepare@1
             displayName: Sonar Prepare
             inputs:
-              SonarCloud: 'Sonar_Cloud'
+              SonarCloud: Sonar_Cloud
               organization: $(organization)
               scannerMode: 'MSBuild'
               projectKey: $(projectKey)
@@ -61,7 +61,7 @@ stages:
                 sonar.cs.vstest.reportsPaths=$(Agent.TempDirectory)/*.trx
             
           - script: dotnet build --configuration $(buildConfiguration)
-            displayName: "Building Project"
+            displayName: Building Project
   
           - task: SonarCloudAnalyze@1
             displayName: Sonar Analyse
@@ -69,7 +69,7 @@ stages:
           - task: SonarCloudPublish@1
             displayName: Sonar Publish
             inputs:
-              pollingTimeoutSec: '300'
+              pollingTimeoutSec: 300
 
           - task: Docker@2
             displayName: Login to ACR
@@ -78,6 +78,7 @@ stages:
               containerRegistry: ACR_CONNECTION
   
           - task: Docker@2
+            displayName: Docker Build and Push (ACR)
             inputs:
               buildContext: .
               containerRegistry: ACR_CONNECTION
@@ -91,9 +92,28 @@ stages:
           - task: PublishPipelineArtifact@1
             displayName: Publish Manifest k8s
             inputs:
-              artifactName: 'manifests'
-              path: '.k8s'
-              
+              artifactName: manifests
+              path: .k8s
+
+  - stage: Deploy
+    displayName: Deploy to Microsoft Azure (AKS)
+    dependsOn: 
+      - Build
+    jobs:
+      - deployment: DeployAzure
+        environment: DeployAzure
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - task: KubernetesManifest@0
+                  displayName: Deploy to Kubernetes cluster (AKS)
+                  inputs:
+                    action: deploy
+                    manifests: |
+                      $(Pipeline.Workspace)/manifests/deployment.yml
+                      $(Pipeline.Workspace)/manifests/service.yml
+                      
   # - stage: DockerECR
   #   displayName: Docker Build and Push (ECR)
   #   jobs:
