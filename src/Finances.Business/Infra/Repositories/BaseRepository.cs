@@ -1,12 +1,15 @@
-﻿using System.Data.SqlClient;
+﻿using System.Data;
+using System.Data.SqlClient;
 
 namespace Finances.Business.Infra.Repositories
 {
     public class BaseRepository
     {
-        protected static SqlConnection GetSqlConnection(string connectionString)
+        protected IDbConnection _connectionDB;
+
+        public BaseRepository(string connectionString)
         {
-            return new SqlConnection(connectionString);
+            _connectionDB = new SqlConnection(connectionString);
         }
     }
 }

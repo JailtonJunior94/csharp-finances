@@ -2,7 +2,7 @@
 
 namespace Finances.Business.Domain.Enums
 {
-    public enum FinaceType
+    public enum FinanceType
     {
         [Description("INCOME")]
         Income,

@@ -13,23 +13,21 @@ namespace Finances.Business.Infra.Repositories
 {
     public class FinanceRepository : BaseRepository, IFinanceRepository
     {
-        private readonly IConfiguration _configuration;
         private readonly ILogger<FinanceRepository> _logger;
 
         public FinanceRepository(ILogger<FinanceRepository> logger,
-                                 IConfiguration configuration)
+                                 IConfiguration configuration) : base(configuration["ConnectionString"])
         {
             _logger = logger;
-            _configuration = configuration;
         }
 
         public async Task<ICollection<Finance>> GetAsync()
         {
             try
             {
-                using var connection = GetSqlConnection(_configuration["ConnectionString"]);
-
+                using var connection = _connectionDB;
                 var finances = await connection.QueryAsync<Finance>(sql: FinaceQuery.GetFinance);
+
                 return finances.ToList();
             }
             catch (Exception exception)
@@ -43,7 +41,7 @@ namespace Finances.Business.Infra.Repositories
         {
             try
             {
-                using var connection = GetSqlConnection(_configuration["ConnectionString"]);
+                using var connection = _connectionDB;
 
                 await connection.ExecuteAsync(FinaceQuery.InsertFinance, new
                 {

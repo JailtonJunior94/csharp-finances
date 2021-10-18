@@ -19,7 +19,7 @@ namespace Finances.Tests.Mocks
         public static FinanceRequest FinanceRequest()
         {
             var fake = new Faker<FinanceRequest>()
-                .CustomInstantiator(faker => new FinanceRequest(faker.Lorem.Paragraph(), faker.Random.Double(), FinaceType.Income))
+                .CustomInstantiator(faker => new FinanceRequest(faker.Lorem.Paragraph(), faker.Random.Double(), FinanceType.Income))
                 .Generate();
 
             return fake;

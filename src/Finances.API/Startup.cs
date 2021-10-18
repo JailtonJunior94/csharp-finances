@@ -1,15 +1,17 @@
-using System;
-using System.Net.Mime;
-using System.Text.Json;
-using Microsoft.OpenApi.Models;
-using Microsoft.AspNetCore.Http;
 using Finances.API.Configurations;
-using Microsoft.Extensions.Hosting;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using Microsoft.Extensions.Hosting;
+using Microsoft.OpenApi.Models;
+using System;
+using System.IO.Compression;
+using System.Net.Mime;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 
 namespace Finances.API
@@ -30,11 +32,16 @@ namespace Finances.API
 
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddControllers()
-                .AddJsonOptions(opts =>
-                {
-                    opts.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
-                });
+            services.AddControllers().AddJsonOptions(opts =>
+            {
+                opts.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+            });
+
+            services.AddResponseCompression();
+            services.Configure<GzipCompressionProviderOptions>(options =>
+            {
+                options.Level = CompressionLevel.Fastest;
+            });
 
             services.AddSwaggerGen(c =>
             {
@@ -68,8 +75,10 @@ namespace Finances.API
             });
 
             app.UseRouting();
-
             app.UseAuthorization();
+
+            app.UseRequestResponseLogging();
+            //app.UseResponseCompression();
 
             app.UseEndpoints(endpoints =>
             {
