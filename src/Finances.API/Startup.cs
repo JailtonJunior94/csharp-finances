@@ -7,10 +7,8 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
-using Newtonsoft.Json.Serialization;
 using Prometheus;
 using Prometheus.DotNetRuntime;
 using System;
@@ -68,8 +66,7 @@ namespace Finances.API
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "Finances.API", Version = "v1" });
             });
             services.AddDependencies();
-            services.AddHealthChecks()
-                .AddSqlServer(Configuration["ConnectionString"], "SELECT 1;", "Sql Server", HealthStatus.Unhealthy, timeout: TimeSpan.FromSeconds(10), tags: new[] { "db", "sql", "sqlServer", });
+            services.AddHealthChecks();
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
