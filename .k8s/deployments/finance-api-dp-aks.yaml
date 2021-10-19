@@ -20,7 +20,7 @@ spec:
     spec:
       containers:
         - name: finance-api
-          image: financesregistry.azurecr.io/finance-api:latest
+          image: financesregistry.azurecr.io/finance-api:140
           livenessProbe:
             httpGet:
               port: 80

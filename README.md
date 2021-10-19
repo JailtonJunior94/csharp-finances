@@ -82,3 +82,21 @@ kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/cont
 ```
 kubectl apply -f https://github.com/jetstack/cert-manager/releases/download/v1.5.3/cert-manager.yaml
 ```
+
+## Instalando Prometheus e Granafa com Helm
+1. Listando repo no helm
+```
+helm repo list
+```
+2. Para buscar repo helm:
+```
+https://artifacthub.io/
+```
+3. Instalando prometheus
+```
+helm install prometheus prometheus-community/prometheus -n monitoring
+```
+3. Instalando grafana
+```
+helm install grafana grafana/grafana -n monitoring
+```

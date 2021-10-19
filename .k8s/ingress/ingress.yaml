@@ -9,6 +9,8 @@ spec:
   tls:
    - hosts:
      - financeiro.jailtonjunior.site
+     - prometheus.jailtonjunior.site
+     - grafana.jailtonjunior.site     
      secretName: financial-api-tls
   rules:
     - host: financeiro.jailtonjunior.site
@@ -19,5 +21,25 @@ spec:
             backend:
               service:
                 name: financial-api-service
+                port:
+                  number: 80
+    - host: prometheus.jailtonjunior.site
+      http:
+        paths:
+          - pathType: Prefix
+            path: /
+            backend:
+              service:
+                name: prometheus-finance-server
+                port:
+                  number: 80
+    - host: grafana.jailtonjunior.site
+      http:
+        paths:
+          - pathType: Prefix
+            path: /
+            backend:
+              service:
+                name: grafana-finance
                 port:
                   number: 80
