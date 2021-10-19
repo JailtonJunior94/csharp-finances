@@ -11,6 +11,8 @@ variables:
   projectKey: JailtonJunior94_csharp-finances
   projectName: csharp-finances
   imageName: finance-api
+  kubernetesServiceConnection: AKS_CONNECTION
+  kubernetesNamespace: finance
 
 stages:
   - stage: Build
@@ -71,6 +73,18 @@ stages:
             inputs:
               pollingTimeoutSec: 300
 
+          - task: PublishPipelineArtifact@1
+            displayName: Publish Manifest k8s
+            inputs:
+              artifactName: manifests
+              path: .k8s              
+
+  - stage: DockerBuildPush
+    dependsOn: 
+      - Build
+    jobs:
+      - job: DockerBuildPush
+        steps:
           - task: Docker@2
             displayName: Login to ACR
             inputs:
@@ -89,16 +103,11 @@ stages:
                   $(Build.BuildId)
                   latest
 
-          - task: PublishPipelineArtifact@1
-            displayName: Publish Manifest k8s
-            inputs:
-              artifactName: manifests
-              path: .k8s
-
-  - stage: Deploy
+  - stage: DeployAKS
     displayName: Deploy to Microsoft Azure (AKS)
     dependsOn: 
       - Build
+      - DockerBuildPush
     jobs:
       - deployment: DeployAzure
         environment: DeployAzure
@@ -106,14 +115,51 @@ stages:
           runOnce:
             deploy:
               steps:
-                - task: KubernetesManifest@0
-                  displayName: Deploy to Kubernetes cluster (AKS)
+                - task: DownloadPipelineArtifact@2
                   inputs:
+                    artifactName: manifests
+                    downloadPath: $(System.ArtifactsDirectory)/manifests
+
+                - task: KubernetesManifest@0
+                  displayName: Deploy Namespace (AKS)
+                  inputs:
+                    kubernetesServiceConnection: $(kubernetesServiceConnection)
+                    namespace: $(kubernetesNamespace)
                     action: deploy
                     manifests: |
-                      $(Pipeline.Workspace)/manifests/deployment.yml
-                      $(Pipeline.Workspace)/manifests/service.yml
-                      
+                      $(System.ArtifactsDirectory)/manifests/namespaces/finance-ns.yaml
+
+                - task: KubernetesManifest@0
+                  displayName: Deploy SQL Server to Kubernetes cluster (AKS)
+                  inputs:
+                    kubernetesServiceConnection: $(kubernetesServiceConnection)
+                    namespace: $(kubernetesNamespace)
+                    action: deploy
+                    manifests: |
+                      $(System.ArtifactsDirectory)/manifests/deployments/finance-db-dp.yaml
+                      $(System.ArtifactsDirectory)/manifests/services/finance-db-svc.yaml
+
+                - task: KubernetesManifest@0
+                  displayName: Deploy Finance API (AKS)
+                  inputs:
+                    kubernetesServiceConnection: $(kubernetesServiceConnection)
+                    namespace: $(kubernetesNamespace)
+                    action: deploy
+                    containers: |
+                      financesregistry.azurecr.io/$(imageName):$(Build.BuildId)
+                    manifests: |
+                      $(System.ArtifactsDirectory)/manifests/deployments/finance-api-dp-aks.yaml
+                      $(System.ArtifactsDirectory)/manifests/services/finance-api-svc.yaml
+
+                - task: KubernetesManifest@0
+                  displayName: Deploy Ingress (AKS)
+                  inputs:
+                    kubernetesServiceConnection: $(kubernetesServiceConnection)
+                    namespace: $(kubernetesNamespace)
+                    action: deploy
+                    manifests: |
+                      $(System.ArtifactsDirectory)/manifests/ingress/ingress.yaml
+
   # - stage: DockerECR
   #   displayName: Docker Build and Push (ECR)
   #   jobs:

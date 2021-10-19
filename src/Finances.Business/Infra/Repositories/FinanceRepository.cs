@@ -1,5 +1,4 @@
-﻿using System;
-using Dapper;
+﻿using Dapper;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Collections.Generic;
@@ -23,43 +22,27 @@ namespace Finances.Business.Infra.Repositories
 
         public async Task<ICollection<Finance>> GetAsync()
         {
-            try
-            {
-                using var connection = _connectionDB;
-                var finances = await connection.QueryAsync<Finance>(sql: FinaceQuery.GetFinance);
+            using var connection = _connectionDB;
+            var finances = await connection.QueryAsync<Finance>(sql: FinaceQuery.GetFinance);
 
-                return finances.ToList();
-            }
-            catch (Exception exception)
-            {
-                _logger.LogError($"[{nameof(FinanceRepository)}] [GetAsync] [{exception?.Message ?? exception?.InnerException.Message}]");
-                return new List<Finance>();
-            }
+            return finances.ToList();
         }
 
         public async Task<Finance> InsertAsync(Finance entity)
         {
-            try
-            {
-                using var connection = _connectionDB;
+            using var connection = _connectionDB;
 
-                await connection.ExecuteAsync(FinaceQuery.InsertFinance, new
-                {
-                    id = entity.ID,
-                    title = entity.Title,
-                    value = entity.Value,
-                    type = entity.Type,
-                    createdAt = entity.CreatedAt
-                });
-
-                _logger.LogInformation($"[{nameof(FinanceRepository)}] [InsertAsync] [Finance registrado com sucesso]");
-                return entity;
-            }
-            catch (Exception exception)
+            await connection.ExecuteAsync(FinaceQuery.InsertFinance, new
             {
-                _logger.LogError($"[{nameof(FinanceRepository)}] [InsertAsync] [{exception?.Message ?? exception?.InnerException.Message}]");
-                return null;
-            }
+                id = entity.ID,
+                title = entity.Title,
+                value = entity.Value,
+                type = entity.Type,
+                createdAt = entity.CreatedAt
+            });
+
+            _logger.LogInformation($"[{nameof(FinanceRepository)}] [InsertAsync] [Finance registrado com sucesso]");
+            return entity;
         }
     }
 }

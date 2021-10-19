@@ -1,4 +1,5 @@
 using Finances.API.Configurations;
+using Finances.API.Middlewares;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Hosting;
@@ -6,8 +7,12 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
+using Newtonsoft.Json.Serialization;
+using Prometheus;
+using Prometheus.DotNetRuntime;
 using System;
 using System.IO.Compression;
 using System.Net.Mime;
@@ -18,6 +23,7 @@ namespace Finances.API
 {
     public class Startup
     {
+        public static IDisposable Collector;
         public IConfiguration Configuration { get; }
 
         public Startup(IHostEnvironment hostEnvironment)
@@ -28,6 +34,20 @@ namespace Finances.API
                 .AddEnvironmentVariables();
 
             Configuration = builder.Build();
+            Collector = ConfigureCollector();
+        }
+
+        public IDisposable ConfigureCollector()
+        {
+            _ = DotNetRuntimeStatsBuilder.Default();
+            DotNetRuntimeStatsBuilder.Builder builder = DotNetRuntimeStatsBuilder.Customize()
+                .WithContentionStats(CaptureLevel.Informational)
+                .WithGcStats(CaptureLevel.Verbose)
+                .WithThreadPoolStats(CaptureLevel.Informational)
+                .WithExceptionStats(CaptureLevel.Errors)
+                .WithJitStats();
+
+            return builder.StartCollecting();
         }
 
         public void ConfigureServices(IServiceCollection services)
@@ -48,7 +68,8 @@ namespace Finances.API
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "Finances.API", Version = "v1" });
             });
             services.AddDependencies();
-            services.AddHealthChecks();
+            services.AddHealthChecks()
+                .AddSqlServer(Configuration["ConnectionString"], "SELECT 1;", "Sql Server", HealthStatus.Unhealthy, timeout: TimeSpan.FromSeconds(10), tags: new[] { "db", "sql", "sqlServer", });
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
@@ -76,9 +97,12 @@ namespace Finances.API
 
             app.UseRouting();
             app.UseAuthorization();
-
             app.UseRequestResponseLogging();
-            //app.UseResponseCompression();
+            app.UseResponseCompression();
+            app.UseHttpMetrics();
+            app.UseMetricServer();
+
+            app.UseMiddleware<ErrorHandlerMiddleware>();
 
             app.UseEndpoints(endpoints =>
             {

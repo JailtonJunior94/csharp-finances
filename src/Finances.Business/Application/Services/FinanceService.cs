@@ -1,10 +1,11 @@
-﻿using System;
-using System.Linq;
+﻿using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Finances.Business.Domain.Dtos;
+using Finances.Business.Domain.Enums;
+using Finances.Business.Domain.Dtos.Base;
 using Finances.Business.Domain.Entities;
 using Finances.Business.Domain.Interfaces;
 using Finances.Business.Shared.Extensions;
@@ -26,36 +27,36 @@ namespace Finances.Business.Application.Services
 
         public async Task<ObjectResult> CreateFinanceAsync(FinanceRequest request)
         {
-            try
+            var finance = await _repository.InsertAsync(new Finance(request.Title, request.Value, request.Type.GetDescription()));
+            if (finance is null)
             {
-                var finance = await _repository.InsertAsync(new Finance(request.Title, request.Value, request.Type.GetDescription()));
-                if (finance is null) return new ObjectResult(new MessageResponse("Não foi possível inserir registro")) { StatusCode = StatusCodes.Status400BadRequest };
+                _logger.LogError($"[{nameof(FinanceService)}] [{nameof(CreateFinanceAsync)}] [{ErrorMessage.RegisterFinanceError}]");
+                var financeError = new ApiResponse<object>(false, new NotificationsResponse(ErrorCode.RegisterFinanceError, ErrorMessage.RegisterFinanceError));
 
-                var response = new FinanceResponse(finance.ID, finance.Title, finance.Value, finance.Type, finance.CreatedAt);
-                return new ObjectResult(response) { StatusCode = StatusCodes.Status201Created };
+                return new ObjectResult(financeError) { StatusCode = StatusCodes.Status400BadRequest };
             }
-            catch (Exception exception)
-            {
-                _logger.LogError($"[{nameof(FinanceService)}] [CreateFinanceAsync] [{exception?.Message ?? exception?.InnerException.Message}]");
-                return new ObjectResult(new MessageResponse("Ocorreu um erro inesperado")) { StatusCode = StatusCodes.Status500InternalServerError };
-            }
+
+            _logger.LogInformation($"[{nameof(FinanceService)}] [{nameof(CreateFinanceAsync)}] [Finance cadastrado com sucesso]");
+            var response = new FinanceResponse(finance.ID, finance.Title, finance.Value, finance.Type, finance.CreatedAt);
+
+            return new ObjectResult(new ApiResponse<object>(true, response)) { StatusCode = StatusCodes.Status201Created };
         }
 
         public async Task<ObjectResult> GetFinanceAsync()
         {
-            try
+            var finances = await _repository.GetAsync();
+            if (!finances.Any())
             {
-                var finances = await _repository.GetAsync();
-                if (!finances.Any()) return new ObjectResult(new MessageResponse("Não foi encontrado nenhum registro")) { StatusCode = StatusCodes.Status404NotFound };
+                _logger.LogError($"[{nameof(FinanceService)}] [{nameof(GetFinanceAsync)}] [{ErrorMessage.FinanceNotFound}]");
+                var financeNotFound = new ApiResponse<object>(false, new NotificationsResponse(ErrorCode.FinanceNotFound, ErrorMessage.FinanceNotFound));
 
-                var response = finances.Select(j => new FinanceResponse(j.ID, j.Title, j.Value, j.Type, j.CreatedAt));
-                return new ObjectResult(response) { StatusCode = StatusCodes.Status200OK };
+                return new ObjectResult(financeNotFound) { StatusCode = StatusCodes.Status404NotFound };
             }
-            catch (Exception exception)
-            {
-                _logger.LogError($"[{nameof(FinanceService)}] [GetFinanceAsync] [{exception?.Message ?? exception?.InnerException.Message}]");
-                return new ObjectResult(new MessageResponse("Ocorreu um erro inesperado")) { StatusCode = StatusCodes.Status500InternalServerError };
-            }
+
+            _logger.LogInformation($"[{nameof(FinanceService)}] [{nameof(CreateFinanceAsync)}] [Finance recuperado com sucesso]");
+            var response = finances.Select(j => new FinanceResponse(j.ID, j.Title, j.Value, j.Type, j.CreatedAt));
+
+            return new ObjectResult(new ApiResponse<object>(true, response)) { StatusCode = StatusCodes.Status200OK };
         }
     }
 }
